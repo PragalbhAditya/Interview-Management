@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { QrCode, ArrowRight, User, Hash } from "lucide-react";
 import { useSocket } from "@/hooks/useSocket";
 
 export default function CheckInPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { socket } = useSocket();
-    const [formData, setFormData] = useState({ name: "", registrationNumber: "" });
+    const [formData, setFormData] = useState({ name: "", registrationNumber: "", roomId: "" });
+
+    useEffect(() => {
+        const roomId = searchParams.get("roomId");
+        if (roomId) {
+            setFormData(prev => ({ ...prev, roomId }));
+        }
+    }, [searchParams]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -60,7 +68,16 @@ export default function CheckInPage() {
                     </div>
 
                     <h2 className="text-2xl font-bold text-center text-slate-900 mb-2">Student Check-In</h2>
-                    <p className="text-center text-slate-500 mb-8 text-sm">Enter your details to join the interview queue automatically.</p>
+                    <p className="text-center text-slate-500 mb-4 text-sm">Enter your details to join the interview queue automatically.</p>
+
+                    {formData.roomId && (
+                        <div className="flex justify-center mb-6">
+                            <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border border-blue-100 flex items-center">
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
+                                Room {formData.roomId.slice(-4)} Selected
+                            </span>
+                        </div>
+                    )}
 
                     {error && (
                         <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-6 border border-red-100">

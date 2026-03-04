@@ -14,6 +14,8 @@ import {
     MoreVertical,
     Activity
 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
+import { useState as useReactState } from "react";
 
 export default function AdminDashboard() {
     const { socket } = useSocket();
@@ -124,6 +126,7 @@ export default function AdminDashboard() {
                                     <th className="px-8 py-4">Status</th>
                                     <th className="px-8 py-4">Now Interviewing</th>
                                     <th className="px-8 py-4">Upcoming</th>
+                                    <th className="px-8 py-4 text-center">Check-in QR</th>
                                     <th className="px-8 py-4">Efficiency</th>
                                 </tr>
                             </thead>
@@ -136,8 +139,8 @@ export default function AdminDashboard() {
                                         </td>
                                         <td className="px-8 py-6">
                                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${room.status === 'ACTIVE'
-                                                    ? 'bg-emerald-100 text-emerald-700'
-                                                    : 'bg-red-100 text-red-700'
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-red-100 text-red-700'
                                                 }`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full mr-2 ${room.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
                                                 {room.status}
@@ -163,6 +166,16 @@ export default function AdminDashboard() {
                                                 <TrendingUp className="h-4 w-4 mr-2 text-blue-400" />
                                                 {/* We could fetch actual count per room here, but using room prop or static if not aggregated */}
                                                 Active Queue
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="flex justify-center">
+                                                <div className="p-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:scale-150 transition-transform cursor-pointer">
+                                                    <QRCodeCanvas
+                                                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/check-in?roomId=${room._id}`}
+                                                        size={40}
+                                                    />
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
