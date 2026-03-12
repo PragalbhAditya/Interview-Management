@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { QrCode, ArrowRight, User, Hash } from "lucide-react";
+import { QrCode, ArrowRight, User, Hash, RefreshCw } from "lucide-react";
 import { useSocket } from "@/hooks/useSocket";
 
-export default function CheckInPage() {
+function CheckInContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { socket } = useSocket();
@@ -176,5 +176,20 @@ export default function CheckInPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function CheckInPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50">
+                <div className="flex flex-col items-center">
+                    <RefreshCw className="h-10 w-10 text-blue-600 animate-spin mb-4" />
+                    <p className="text-slate-500 font-medium">Loading Check-In...</p>
+                </div>
+            </div>
+        }>
+            <CheckInContent />
+        </Suspense>
     );
 }
