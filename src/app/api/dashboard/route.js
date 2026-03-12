@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Student from "@/models/Student";
 import Room from "@/models/Room";
+import path from "path";
+import fs from "fs";
+import * as XLSX from "xlsx";
 
 export async function GET() {
     try {
@@ -12,10 +15,26 @@ export async function GET() {
             Student.find()
         ]);
 
-        const totalStudents = students.length;
-        const checkedIn = students.filter(s => s.status !== 'COMPLETED').length;
+        // Load master list from Excel
+        let masterList = [];
+        try {
+            const filePath = path.join(process.cwd(), "data", "students.xlsx");
+            if (fs.existsSync(filePath)) {
+                const fileBuffer = fs.readFileSync(filePath);
+                const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                masterList = XLSX.utils.sheet_to_json(worksheet);
+            }
+        } catch (e) {
+            console.error("Master list load error:", e);
+        }
+
+        const totalStudents = masterList.length || students.length;
+        const checkedInTotal = students.length;
         const interviewed = students.filter(s => s.status === 'COMPLETED').length;
-        const waiting = students.filter(s => s.status === 'WAITING').length;
+        const waiting = students.filter(s => s.status === 'WAITING' || s.status === 'INTERVIEWING').length;
+        const notArrived = Math.max(0, totalStudents - checkedInTotal);
 
         // Calculate Average Interview Duration (only for those who completed)
         const completedStudents = students.filter(s => s.interviewStartTime && s.interviewEndTime);
@@ -40,11 +59,14 @@ export async function GET() {
 
         return NextResponse.json({
             rooms,
+            students,
+            masterList,
             stats: {
                 totalStudents,
-                checkedIn,
+                checkedIn: checkedInTotal,
                 interviewed,
                 waiting,
+                notArrived,
                 avgDuration,
                 estimatedRemainingMinutes
             }

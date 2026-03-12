@@ -11,6 +11,14 @@ const studentSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
+        branch: {
+            type: String,
+            default: "",
+        },
+        contactNumber: {
+            type: String,
+            default: "",
+        },
         room: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Room",

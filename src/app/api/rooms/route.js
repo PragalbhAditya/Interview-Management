@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Room from "@/models/Room";
+import Student from "@/models/Student";
 
 export async function GET() {
     try {
@@ -8,16 +9,7 @@ export async function GET() {
 
         let rooms = await Room.find().populate('currentStudent').sort({ name: 1 });
 
-        // Seed default rooms if none exist
-        if (rooms.length === 0) {
-            await Room.insertMany([
-                { name: "Room 1" },
-                { name: "Room 2" },
-                { name: "Room 3" }
-            ]);
-            rooms = await Room.find().populate('currentStudent').sort({ name: 1 });
-        }
-
+        // Seeding logic removed as per user request to remove all rooms.
         return NextResponse.json(rooms);
     } catch (error) {
         console.error("Error fetching rooms:", error);

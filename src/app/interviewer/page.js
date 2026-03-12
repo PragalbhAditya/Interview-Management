@@ -12,7 +12,16 @@ export default function InterviewerRoomSelect() {
         fetch("/api/rooms")
             .then(res => res.json())
             .then(data => {
-                setRooms(data);
+                if (Array.isArray(data) && data.length === 1) {
+                    window.location.href = `/interviewer/${data[0]._id}`;
+                } else {
+                    setRooms(Array.isArray(data) ? data : []);
+                    setLoading(false);
+                }
+            })
+            .catch(err => {
+                console.error("Failed to fetch rooms:", err);
+                setRooms([]);
                 setLoading(false);
             });
     }, []);

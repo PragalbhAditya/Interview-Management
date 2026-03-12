@@ -2,13 +2,39 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Student from "@/models/Student";
 import Room from "@/models/Room";
+import path from "path";
+import * as XLSX from "xlsx";
+import fs from "fs";
 
 export async function POST(request) {
     try {
         await connectDB();
-        const { name, registrationNumber, roomId } = await request.json();
+        let { name, registrationNumber, roomId } = await request.json();
 
-        if (!name || !registrationNumber) {
+        if (!registrationNumber) {
+            return NextResponse.json({ error: "Registration number is required" }, { status: 400 });
+        }
+
+        // Verify name from Excel if not provided or to ensure accuracy
+        const filePath = path.join(process.cwd(), "data", "students.xlsx");
+        let studentData = null;
+        if (fs.existsSync(filePath)) {
+            const fileBuffer = fs.readFileSync(filePath);
+            const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const data = XLSX.utils.sheet_to_json(worksheet);
+
+            studentData = data.find(s =>
+                String(s["Registration Number"]).toUpperCase() === registrationNumber.toUpperCase()
+            );
+
+            if (studentData) {
+                name = studentData["Name"];
+            } else if (!name) {
+                return NextResponse.json({ error: "Student not found in database" }, { status: 404 });
+            }
+        } else if (!name) {
             return NextResponse.json({ error: "Name and Reg. No are required" }, { status: 400 });
         }
 
@@ -59,6 +85,8 @@ export async function POST(request) {
             { registrationNumber },
             {
                 name,
+                branch: studentData ? studentData["Branch/Stream"] : "",
+                contactNumber: studentData ? String(studentData["Contact No"]) : "",
                 room: assignedRoomId,
                 status: "WAITING",
                 queuePosition,
@@ -71,6 +99,6 @@ export async function POST(request) {
 
     } catch (error) {
         console.error("Check-in error:", error);
-        return NextResponse.json({ error: "Failed to check in" }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Failed to check in" }, { status: 500 });
     }
 }
