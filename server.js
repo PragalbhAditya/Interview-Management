@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 6969;
 
 // Initialize the Next.js app
 const app = next({ dev, hostname, port });
@@ -40,7 +40,7 @@ app.prepare().then(() => {
       // Alert the room and its display board
       io.to(roomId).emit("queueUpdated");
       io.to(roomId).emit("playBell", student);
-      
+
       // Alert the dashboard
       io.to("dashboard").emit("dashboardUpdated");
     });

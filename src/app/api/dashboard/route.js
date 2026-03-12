@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import Student from "@/models/Student";
 import Room from "@/models/Room";
@@ -73,7 +74,18 @@ export async function GET() {
         });
 
     } catch (error) {
-        console.error("Dashboard API error:", error);
-        return NextResponse.json({ error: "Failed to fetch dashboard data" }, { status: 500 });
+        console.error("CRITICAL Dashboard API error:", error);
+        // Log more details if it's a Mongoose error
+        if (error.name === 'MongooseError' || error.name === 'MongoError') {
+            console.error("Database connection details:", {
+                readyState: mongoose.connection.readyState,
+                host: mongoose.connection.host
+            });
+        }
+        return NextResponse.json({
+            error: "Failed to fetch dashboard data",
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }, { status: 500 });
     }
 }
