@@ -8,7 +8,7 @@ export default function DisplayBoardSelect() {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchRooms = () => {
         fetch("/api/rooms")
             .then(res => res.json())
             .then(data => {
@@ -24,6 +24,12 @@ export default function DisplayBoardSelect() {
                 setRooms([]);
                 setLoading(false);
             });
+    };
+
+    useEffect(() => {
+        fetchRooms();
+        const interval = setInterval(fetchRooms, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) {

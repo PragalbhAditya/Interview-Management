@@ -26,7 +26,7 @@ const studentSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["WAITING", "INTERVIEWING", "COMPLETED"],
+            enum: ["WAITING", "GD_WAITING", "GD_ONGOING", "GD_PASSED", "GD_FAILED", "INTERVIEWING", "COMPLETED"],
             default: "WAITING",
         },
         queuePosition: {

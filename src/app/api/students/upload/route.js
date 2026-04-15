@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
+import { emitQueueUpdated } from "@/lib/socket";
 
 export async function POST(request) {
     try {
@@ -28,6 +29,9 @@ export async function POST(request) {
         }
 
         fs.writeFileSync(filePath, buffer);
+
+        // Notify dashboard that master list has changed
+        emitQueueUpdated(null);
 
         return NextResponse.json({ message: "Student database updated successfully" });
     } catch (error) {

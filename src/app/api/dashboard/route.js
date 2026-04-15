@@ -12,7 +12,7 @@ export async function GET() {
         await connectDB();
 
         const [rooms, students] = await Promise.all([
-            Room.find().populate('currentStudent'),
+            Room.find().populate({ path: 'currentStudents', strictPopulate: false }),
             Student.find()
         ]);
 

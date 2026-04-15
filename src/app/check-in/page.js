@@ -37,7 +37,7 @@ function CheckInContent() {
                 setVerifying(true);
                 setError("");
                 try {
-                    const res = await fetch(`/api/students/verify?registrationNumber=${formData.registrationNumber}`);
+                    const res = await fetch(`/api/students/verify?registrationNumber=${encodeURIComponent(formData.registrationNumber)}`);
                     const data = await res.json();
                     if (res.ok) {
                         setVerifiedName(data.name);
@@ -84,11 +84,6 @@ function CheckInContent() {
 
             if (!res.ok) {
                 throw new Error(data.error || "Check-in failed");
-            }
-
-            // Notify server about new check-in to broadcast
-            if (socket && data.student?.room) {
-                socket.emit("studentCheckedIn", { roomId: data.student.room });
             }
 
             // Redirect to status page

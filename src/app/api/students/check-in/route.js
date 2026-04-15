@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Student from "@/models/Student";
 import Room from "@/models/Room";
+import { emitQueueUpdated } from "@/lib/socket";
 import path from "path";
 import * as XLSX from "xlsx";
 import fs from "fs";
@@ -78,22 +79,27 @@ export async function POST(request) {
 
         const queuePosition = lastStudent ? lastStudent.queuePosition + 1 : 1;
 
-        // Create new checking
-        // Note: in a real situation, we might overwrite a previous checkin if they were COMPLETED. 
-        // Here we findOneAndUpdate to support reapplying or simply create. Let's create.
+        // Determine status based on Room settings
+        const room = await Room.findById(assignedRoomId);
+        const initialStatus = room.isGDEnabled ? "GD_WAITING" : "WAITING";
+
+        // Create or Update student
         const newStudent = await Student.findOneAndUpdate(
             { registrationNumber },
             {
                 name,
-                branch: studentData ? studentData["Branch/Stream"] : "",
-                contactNumber: studentData ? String(studentData["Contact No"]) : "",
+                branch: studentData ? (studentData["Branch/Stream"] || "") : "",
+                contactNumber: studentData ? (String(studentData["Contact No"] || "")) : "",
                 room: assignedRoomId,
-                status: "WAITING",
+                status: initialStatus,
                 queuePosition,
                 checkInTime: new Date()
             },
             { upsert: true, new: true }
         );
+
+        // Broadcast real-time update
+        emitQueueUpdated(assignedRoomId);
 
         return NextResponse.json({ message: "Check-in successful", student: newStudent }, { status: 201 });
 

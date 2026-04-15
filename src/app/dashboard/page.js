@@ -26,7 +26,6 @@ import {
     UserPlus
 } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
-import { useState as useReactState } from "react";
 
 export default function AdminDashboard() {
     const { socket } = useSocket();
@@ -44,10 +43,15 @@ export default function AdminDashboard() {
         try {
             const res = await fetch("/api/dashboard");
             const json = await res.json();
-            setData(json);
+            if (res.ok) {
+                setData(json);
+            } else {
+                console.error("Dashboard API Error:", json);
+            }
             setLoading(false);
         } catch (err) {
-            console.error(err);
+            console.error("Fetch Error:", err);
+            setLoading(false);
         }
     };
 
@@ -163,7 +167,7 @@ export default function AdminDashboard() {
         );
     }
 
-    const { stats, rooms, students, masterList } = data;
+    const { stats = {}, rooms = [], students = [], masterList = [] } = data || {};
 
     // Merge master list with live status
     const masterMap = new Map();
@@ -190,8 +194,8 @@ export default function AdminDashboard() {
             _id: live?._id || `master-${regNo}`,
             registrationNumber: regNo,
             name: live?.name || master?.["Name"] || "Unknown",
-            branch: live?.branch || master?.["Branch/Stream"] || "",
-            contactNumber: live?.contactNumber || master?.["Contact No"] || "",
+            branch: master ? (master["Branch/Stream"] || "") : "",
+            contactNumber: master ? (String(master["Contact No"] || "")) : "",
             status: live?.status || "NOT CHECKED IN"
         };
     }).filter(student => {
@@ -330,15 +334,19 @@ export default function AdminDashboard() {
                                             </span>
                                         </td>
                                         <td className="px-8 py-6">
-                                            {room.currentStudent ? (
-                                                <div className="flex items-center">
-                                                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                        <Users className="h-4 w-4 text-blue-600" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm font-bold text-slate-800">{room.currentStudent.name}</div>
-                                                        <div className="text-xs text-slate-500 font-medium">{room.currentStudent.registrationNumber}</div>
-                                                    </div>
+                                            {room.currentStudents && room.currentStudents.length > 0 ? (
+                                                <div className="space-y-3">
+                                                    {room.currentStudents.map(student => (
+                                                        <div key={student._id} className="flex items-center">
+                                                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                                <Users className="h-4 w-4 text-blue-600" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-sm font-bold text-slate-800">{student.name}</div>
+                                                                <div className="text-xs text-slate-500 font-medium">{student.registrationNumber}</div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             ) : (
                                                 <span className="text-slate-300 italic text-sm font-medium">Empty</span>

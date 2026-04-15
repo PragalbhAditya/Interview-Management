@@ -7,11 +7,10 @@ const roomSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
-        currentStudent: {
+        currentStudents: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Student",
-            default: null,
-        },
+        }],
         status: {
             type: String,
             enum: ["ACTIVE", "PAUSED"],
@@ -21,10 +20,23 @@ const roomSchema = new mongoose.Schema(
             type: Number,
             default: 15, // in minutes
         },
+        isGDEnabled: {
+            type: Boolean,
+            default: false,
+        },
+        currentGDGroup: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Student",
+        }],
     },
     { timestamps: true }
 );
 
+// Re-register model if cached version has old schema (pre currentStudents array migration)
+if (mongoose.models.Room && !mongoose.models.Room.schema.path('currentStudents')) {
+    delete mongoose.models.Room;
+}
 const Room = mongoose.models.Room || mongoose.model("Room", roomSchema);
+
 
 export default Room;

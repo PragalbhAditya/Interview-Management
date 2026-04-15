@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Student from "@/models/Student";
 import Room from "@/models/Room";
+import { emitQueueUpdated } from "@/lib/socket";
 
 export async function GET(request) {
     try {
@@ -95,6 +96,9 @@ export async function POST(request) {
             },
             { upsert: true, new: true }
         );
+
+        // Broadcast real-time update
+        emitQueueUpdated(assignedRoomId);
 
         return NextResponse.json({ message: "Student added manually", student }, { status: 201 });
 

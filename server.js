@@ -7,12 +7,15 @@ const hostname = "localhost";
 const port = process.env.PORT || 6969;
 
 // Initialize the Next.js app
-const app = next({ dev, hostname, port });
+const app = next({ dev, hostname, port, dir: __dirname });
 const handler = app.getRequestHandler();
 
 app.prepare().then(() => {
   const httpServer = createServer(handler);
   const io = new Server(httpServer);
+
+  // Expose io globally so Next.js API routes can emit events server-side
+  global._socketIO = io;
 
   io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);

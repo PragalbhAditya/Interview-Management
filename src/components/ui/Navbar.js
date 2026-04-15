@@ -16,6 +16,15 @@ export default function Navbar() {
                         <Link href="/check-in" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors">
                             <QrCode className="h-4 w-4 mr-1" /> Check-In
                         </Link>
+                        <Link href="/interviewer" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors">
+                            <Briefcase className="h-4 w-4 mr-1" /> Interviewer
+                        </Link>
+                        <Link href="/display" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors">
+                            <MonitorPlay className="h-4 w-4 mr-1" /> Display
+                        </Link>
+                        <Link href="/display/all" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors">
+                            <MonitorPlay className="h-4 w-4 mr-1" /> Command Center
+                        </Link>
                         <Link href="/dashboard" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors">
                             <LayoutDashboard className="h-4 w-4 mr-1" /> Dashboard
                         </Link>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Student from "@/models/Student";
 import Room from "@/models/Room";
+import { emitQueueUpdated } from "@/lib/socket";
 import path from "path";
 import fs from "fs";
 import * as XLSX from "xlsx";
@@ -77,6 +78,25 @@ export async function PATCH(request, { params }) {
             return NextResponse.json({ error: "Student not found" }, { status: 404 });
         }
 
+        // Sync room's currentStudents array based on new status
+        if (student.room) {
+            if (status === "INTERVIEWING") {
+                await Room.updateOne(
+                    { _id: student.room, currentStudents: { $ne: student._id } },
+                    { $push: { currentStudents: student._id } }
+                );
+                // Also play bell sound if manually moved to interviewing
+                emitPlayBell(student.room, student);
+            } else {
+                await Room.updateMany(
+                    { currentStudents: student._id },
+                    { $pull: { currentStudents: student._id } }
+                );
+            }
+            // Broadcast real-time update to display boards and dashboard
+            emitQueueUpdated(student.room);
+        }
+
         return NextResponse.json({ message: "Status updated", student });
     } catch (error) {
         console.error("Status update error:", error);
@@ -94,9 +114,14 @@ export async function DELETE(request, { params }) {
         }
 
         const student = await Student.findByIdAndDelete(id);
-
-        if (!student) {
-            return NextResponse.json({ error: "Student not found" }, { status: 404 });
+        if (student) {
+            // Also remove if this student was active in any room's array
+            await Room.updateMany(
+                { currentStudents: id },
+                { $pull: { currentStudents: id } }
+            );
+            // Broadcast real-time update
+            emitQueueUpdated(student.room);
         }
 
         return NextResponse.json({ message: "Student removed from queue" });
