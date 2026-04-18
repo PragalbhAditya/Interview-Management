@@ -38,8 +38,9 @@ app.prepare().then(() => {
     : http.createServer(handler);
 
   const io = new Server(httpServer, {
-    transports: ["websocket"],
-    maxHttpBufferSize: 2e6, // 2 MB — enough for a full voice chunk burst
+    transports: ["websocket", "polling"], // polling fallback helps LAN devices connect
+    maxHttpBufferSize: 2e6,
+    cors: { origin: "*", methods: ["GET", "POST"] },
   });
 
   // Expose io globally so Next.js API routes can emit events server-side
@@ -82,30 +83,27 @@ app.prepare().then(() => {
       io.to("dashboard").emit("dashboardUpdated");
     });
 
-    // Voice chat — join a team channel
+    // Voice chat — everyone joins the single shared voice room
     socket.on("joinTeam", ({ team, name }) => {
-      if (socket.currentTeam) {
-        socket.leave(`team:${socket.currentTeam}`);
-      }
-      socket.join(`team:${team}`);
-      socket.currentTeam = team;
+      socket.join("voice:global");
       socket.displayName = name;
-      console.log(`${name} joined team channel: ${team}`);
+      socket.teamName = team;
+      console.log(`${name} (${team}) joined voice:global`);
     });
 
     // Voice chat — someone started transmitting
-    socket.on("userSpeaking", ({ team, name }) => {
-      socket.to(`team:${team}`).emit("userSpeaking", { name });
+    socket.on("userSpeaking", ({ name, team }) => {
+      socket.to("voice:global").emit("userSpeaking", { name, team });
     });
 
-    // Voice chat — relay an audio chunk to the team (excludes sender)
-    socket.on("voiceChunk", ({ team, name, chunk, mimeType }) => {
-      socket.to(`team:${team}`).emit("voiceChunk", { name, chunk, mimeType });
+    // Voice chat — relay an audio chunk to everyone (excludes sender)
+    socket.on("voiceChunk", ({ name, team, chunk, mimeType }) => {
+      socket.to("voice:global").emit("voiceChunk", { name, team, chunk, mimeType });
     });
 
     // Voice chat — someone finished transmitting
-    socket.on("userStoppedSpeaking", ({ team, name }) => {
-      socket.to(`team:${team}`).emit("userStoppedSpeaking", { name });
+    socket.on("userStoppedSpeaking", ({ name, team }) => {
+      socket.to("voice:global").emit("userStoppedSpeaking", { name, team });
     });
 
     socket.on("disconnect", () => {
