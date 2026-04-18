@@ -210,8 +210,8 @@ export default function AdminDashboard() {
     });
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] bg-slate-50 p-6 md:p-10">
-            <div className="max-w-7xl mx-auto space-y-8">
+        <div className="min-h-[calc(100vh-4rem)] bg-slate-50 p-4 sm:p-6 md:p-10">
+            <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -300,12 +300,64 @@ export default function AdminDashboard() {
 
                 {/* Rooms Monitor Table */}
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                         <h2 className="text-lg font-bold text-slate-800">Room Monitoring</h2>
                         <button className="text-slate-400 hover:text-slate-600"><MoreVertical className="h-5 w-5" /></button>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* Mobile cards */}
+                    <div className="md:hidden divide-y divide-slate-100">
+                        {rooms.map(room => {
+                            const waitingCount = students.filter(s => s.room === room._id && s.status === 'WAITING').length;
+                            const percentage = Math.min(100, (waitingCount / 10) * 100);
+                            const next = students.filter(s => s.room === room._id && s.status === 'WAITING').sort((a, b) => a.queuePosition - b.queuePosition)[0];
+                            return (
+                                <div key={room._id} className="p-4 space-y-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div className="font-bold text-slate-900">{room.name}</div>
+                                            <div className="text-xs text-slate-400 font-medium">ID: {room._id.slice(-6).toUpperCase()}</div>
+                                        </div>
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shrink-0 ${room.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${room.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                                            {room.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <div className="text-slate-600">
+                                            {room.currentStudents && room.currentStudents.length > 0
+                                                ? <span className="font-bold">{room.currentStudents.map(s => s.name).join(', ')}</span>
+                                                : <span className="text-slate-300 italic">No one interviewing</span>}
+                                        </div>
+                                        <div className="flex items-center text-slate-500 font-bold text-xs shrink-0 ml-2">
+                                            <TrendingUp className="h-3 w-3 mr-1 text-blue-400" />{waitingCount} waiting
+                                        </div>
+                                    </div>
+                                    {next && (
+                                        <div className="flex items-center text-xs text-slate-500">
+                                            <Clock className="h-3 w-3 mr-1.5 text-amber-500 shrink-0" />
+                                            <span className="font-medium">Up next: </span>
+                                            <span className="font-bold ml-1">{next.name}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex-1">
+                                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                <div className={`h-full transition-all duration-500 ${percentage > 80 ? 'bg-red-500' : percentage > 40 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${percentage}%` }}></div>
+                                            </div>
+                                            <div className="text-[10px] text-slate-400 mt-1 font-bold">{Math.round(percentage)}% Load</div>
+                                        </div>
+                                        <div className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm">
+                                            <QRCodeCanvas value={`${typeof window !== 'undefined' ? window.location.origin : ''}/check-in?roomId=${room._id}`} size={32} />
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-[0.2em]">
@@ -407,15 +459,15 @@ export default function AdminDashboard() {
 
                 {/* Students Data Table */}
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h2 className="text-lg font-bold text-slate-800">Student Registration Data</h2>
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="relative">
+                    <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <h2 className="text-lg font-bold text-slate-800 shrink-0">Student Registration Data</h2>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative flex-1 min-w-[160px]">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                 <input
                                     type="text"
                                     placeholder="Search by name, reg no..."
-                                    className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none w-64 transition-all"
+                                    className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-64 transition-all"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -446,7 +498,70 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* Mobile cards */}
+                    <div className="md:hidden divide-y divide-slate-100">
+                        {mergedStudents.map(student => (
+                            <div key={student._id} className="p-4 space-y-2">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <div className="font-bold text-slate-900 truncate">{student.name}</div>
+                                        <div className="text-xs font-medium text-slate-500">{student.registrationNumber}</div>
+                                    </div>
+                                    {student.status !== 'NOT CHECKED IN' ? (
+                                        <button
+                                            onClick={() => deleteStudent(student._id)}
+                                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shrink-0"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    ) : null}
+                                </div>
+                                <div className="text-xs text-slate-400 font-medium">
+                                    {student.branch || 'N/A'}{student.contactNumber ? ` · ${student.contactNumber}` : ''}
+                                </div>
+                                <div className="relative inline-block">
+                                    <button
+                                        onClick={() => setActiveActionId(activeActionId === student._id ? null : student._id)}
+                                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${student.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
+                                            student.status === 'INTERVIEWING' ? 'bg-blue-100 text-blue-700' :
+                                                student.status === 'WAITING' ? 'bg-amber-100 text-amber-700' :
+                                                    'bg-slate-100 text-slate-500'
+                                            } hover:ring-2 hover:ring-offset-1 hover:ring-slate-200`}
+                                    >
+                                        {student.status === 'COMPLETED' ? <CheckCircle2 className="h-3 w-3 mr-1.5" /> :
+                                            student.status === 'INTERVIEWING' ? <Play className="h-3 w-3 mr-1.5" /> :
+                                                student.status === 'WAITING' ? <Clock className="h-3 w-3 mr-1.5" /> :
+                                                    <Activity className="h-3 w-3 mr-1.5 opacity-50" />}
+                                        {student.status.replace(/_/g, ' ')}
+                                        <ChevronDown className="h-3 w-3 ml-1.5 opacity-50" />
+                                    </button>
+                                    {activeActionId === student._id && (
+                                        <div className="absolute left-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-2 animate-in fade-in zoom-in-95 duration-200">
+                                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Quick Status Move</div>
+                                            {['WAITING', 'INTERVIEWING', 'COMPLETED'].map(s => (
+                                                <button
+                                                    key={s}
+                                                    onClick={() => updateStudentStatus(student._id, s)}
+                                                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors mb-1 last:mb-0 flex items-center justify-between ${student.status === s ? 'bg-slate-50 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
+                                                >
+                                                    {s.replace(/_/g, ' ')}
+                                                    {student.status === s && <CheckCircle2 className="h-3 w-3 text-emerald-500" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        {mergedStudents.length === 0 && (
+                            <div className="px-4 py-10 text-center text-slate-400 italic font-medium text-sm">
+                                No students found. Use &quot;Upload List&quot; to add students.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-[0.2em]">
@@ -534,7 +649,7 @@ export default function AdminDashboard() {
             {showAddModal && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="bg-slate-50 px-10 py-8 border-b border-slate-100 flex justify-between items-center">
+                        <div className="bg-slate-50 px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-100 flex justify-between items-center">
                             <div>
                                 <h3 className="text-xl font-black text-slate-900">Manual Entry</h3>
                                 <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Add Student to Queue</p>
@@ -544,7 +659,7 @@ export default function AdminDashboard() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleAddStudent} className="p-10 space-y-6">
+                        <form onSubmit={handleAddStudent} className="p-6 sm:p-10 space-y-6">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="col-span-2">
                                     <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Full Name</label>

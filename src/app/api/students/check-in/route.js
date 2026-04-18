@@ -3,9 +3,7 @@ import connectDB from "@/lib/db";
 import Student from "@/models/Student";
 import Room from "@/models/Room";
 import { emitQueueUpdated } from "@/lib/socket";
-import path from "path";
-import * as XLSX from "xlsx";
-import fs from "fs";
+import { getStudentRoster } from "@/lib/excelCache";
 
 export async function POST(request) {
     try {
@@ -16,20 +14,13 @@ export async function POST(request) {
             return NextResponse.json({ error: "Registration number is required" }, { status: 400 });
         }
 
-        // Verify name from Excel if not provided or to ensure accuracy
-        const filePath = path.join(process.cwd(), "data", "students.xlsx");
+        // Verify name from cached roster
+        const roster = getStudentRoster();
         let studentData = null;
-        if (fs.existsSync(filePath)) {
-            const fileBuffer = fs.readFileSync(filePath);
-            const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const data = XLSX.utils.sheet_to_json(worksheet);
-
-            studentData = data.find(s =>
+        if (roster.length > 0) {
+            studentData = roster.find(s =>
                 String(s["Registration Number"]).toUpperCase() === registrationNumber.toUpperCase()
             );
-
             if (studentData) {
                 name = studentData["Name"];
             } else if (!name) {
@@ -43,23 +34,15 @@ export async function POST(request) {
         let assignedRoomId = roomId;
 
         if (!assignedRoomId) {
-            // Find room with minimum students waiting
-            const rooms = await Room.find({ status: "ACTIVE" });
+            const rooms = await Room.find({ status: "ACTIVE" }, "_id");
             if (rooms.length === 0) {
                 return NextResponse.json({ error: "No active rooms available" }, { status: 400 });
             }
-
-            let minQueue = Infinity;
-            let selectedRoom = rooms[0];
-
-            for (let r of rooms) {
-                const waitingCount = await Student.countDocuments({ room: r._id, status: "WAITING" });
-                if (waitingCount < minQueue) {
-                    minQueue = waitingCount;
-                    selectedRoom = r;
-                }
-            }
-            assignedRoomId = selectedRoom._id;
+            const counts = await Promise.all(
+                rooms.map(r => Student.countDocuments({ room: r._id, status: "WAITING" }))
+            );
+            const minIdx = counts.indexOf(Math.min(...counts));
+            assignedRoomId = rooms[minIdx]._id;
         }
 
         // Check if student already exists and is not COMPLETED

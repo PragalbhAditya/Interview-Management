@@ -37,7 +37,7 @@ export default function InterviewerRoomSelect() {
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center p-6 bg-slate-50">
             <div className="text-center mt-10 mb-12">
-                <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Select Interview Room</h1>
+                <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Select Interview Room</h1>
                 <p className="text-slate-500 max-w-lg mx-auto">Choose the room you are managing to open the Interviewer Control Panel.</p>
             </div>
 

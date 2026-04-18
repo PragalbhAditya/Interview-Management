@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import { emitQueueUpdated } from "@/lib/socket";
+import { invalidateRoster } from "@/lib/excelCache";
 
 export async function POST(request) {
     try {
@@ -29,6 +30,7 @@ export async function POST(request) {
         }
 
         fs.writeFileSync(filePath, buffer);
+        invalidateRoster();
 
         // Notify dashboard that master list has changed
         emitQueueUpdated(null);

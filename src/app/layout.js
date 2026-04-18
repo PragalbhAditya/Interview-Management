@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import Navbar from "@/components/ui/Navbar";
+import TeamChat from "@/components/ui/TeamChat";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
         <main className="min-h-[calc(100vh-4rem)]">
           {children}
         </main>
+        <TeamChat />
       </body>
     </html>
   );

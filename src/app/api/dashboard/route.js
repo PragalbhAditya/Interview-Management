@@ -3,9 +3,7 @@ import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import Student from "@/models/Student";
 import Room from "@/models/Room";
-import path from "path";
-import fs from "fs";
-import * as XLSX from "xlsx";
+import { getStudentRoster } from "@/lib/excelCache";
 
 export async function GET() {
     try {
@@ -16,20 +14,7 @@ export async function GET() {
             Student.find()
         ]);
 
-        // Load master list from Excel
-        let masterList = [];
-        try {
-            const filePath = path.join(process.cwd(), "data", "students.xlsx");
-            if (fs.existsSync(filePath)) {
-                const fileBuffer = fs.readFileSync(filePath);
-                const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                masterList = XLSX.utils.sheet_to_json(worksheet);
-            }
-        } catch (e) {
-            console.error("Master list load error:", e);
-        }
+        const masterList = getStudentRoster();
 
         const totalStudents = masterList.length || students.length;
         const checkedInTotal = students.length;

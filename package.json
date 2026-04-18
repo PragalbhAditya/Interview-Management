@@ -6,7 +6,8 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate-cert": "node scripts/generate-cert.js"
   },
   "dependencies": {
     "lucide-react": "^0.577.0",

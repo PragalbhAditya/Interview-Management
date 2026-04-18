@@ -8,8 +8,7 @@ export const useSocket = () => {
 
     useEffect(() => {
         if (!socket) {
-            // Connect to the same origin since we're using a custom server
-            socket = io();
+            socket = io({ transports: ["websocket"] });
 
             socket.on("connect", () => {
                 setIsConnected(true);

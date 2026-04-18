@@ -49,6 +49,9 @@ const studentSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+studentSchema.index({ room: 1, status: 1 });
+studentSchema.index({ room: 1, queuePosition: 1 });
+
 const Student = mongoose.models.Student || mongoose.model("Student", studentSchema);
 
 export default Student;

@@ -145,41 +145,41 @@ export default function InterviewerDashboard({ params }) {
         <div className="min-h-screen bg-slate-50 pb-12">
             {/* Top Header */}
             <div className="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-20 shadow-sm">
-                <div className="max-w-6xl mx-auto flex justify-between items-center">
-                    <div className="flex items-center">
+                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center w-full sm:w-auto">
                         <Link href="/interviewer" className="mr-4 p-2 hover:bg-slate-100 rounded-full transition-colors">
                             <ArrowLeft className="h-5 w-5 text-slate-500" />
                         </Link>
-                        <div>
-                            <h1 className="text-xl font-bold text-slate-900">{room.name}</h1>
+                        <div className="flex-1">
+                            <h1 className="text-xl font-bold text-slate-900 truncate">{room.name}</h1>
                             <div className="flex items-center text-xs font-semibold uppercase tracking-wider">
                                 <span className={`w-2 h-2 rounded-full mr-1.5 ${room.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
                                 <span className={room.status === 'ACTIVE' ? 'text-emerald-600' : 'text-red-500'}>{room.status}</span>
                             </div>
                         </div>
                     </div>
-                    <div className="flex space-x-3">
+                    <div className="flex flex-wrap justify-center sm:justify-end gap-3 w-full sm:w-auto">
                         <button
                             onClick={() => handleAction("TOGGLE_GD")}
                             disabled={actionLoading}
-                            className={`flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all ${room.isGDEnabled
+                            className={`flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex-1 sm:flex-none ${room.isGDEnabled
                                 ? 'bg-indigo-600 text-white shadow-md'
                                 : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'
                                 }`}
                         >
-                            <Users className="h-4 w-4 mr-2" />
-                            GD Mode: {room.isGDEnabled ? "ON" : "OFF"}
+                            <Users className="h-4 w-4 mr-2 shrink-0" />
+                            GD: {room.isGDEnabled ? "ON" : "OFF"}
                         </button>
                         <button
                             onClick={() => handleAction("TOGGLE_PAUSE")}
                             disabled={actionLoading}
-                            className={`flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all ${room.status === 'ACTIVE'
+                            className={`flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold transition-all flex-1 sm:flex-none ${room.status === 'ACTIVE'
                                 ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
                                 : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
                                 }`}
                         >
-                            {room.status === 'ACTIVE' ? <PauseCircle className="h-4 w-4 mr-2" /> : <PlayCircle className="h-4 w-4 mr-2" />}
-                            {room.status === 'ACTIVE' ? "Pause Queue" : "Resume Queue"}
+                            {room.status === 'ACTIVE' ? <PauseCircle className="h-4 w-4 mr-2 shrink-0" /> : <PlayCircle className="h-4 w-4 mr-2 shrink-0" />}
+                            {room.status === 'ACTIVE' ? "Pause" : "Resume"}
                         </button>
                     </div>
                 </div>
@@ -221,7 +221,7 @@ export default function InterviewerDashboard({ params }) {
 
                                     {gdOngoing.length > 0 ? (
                                         <div className="space-y-6">
-                                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                                                 {gdOngoing.map(s => (
                                                     <button 
                                                         key={s._id}
@@ -289,18 +289,18 @@ export default function InterviewerDashboard({ params }) {
                                         ))}
                                     </div>
 
-                                    <div className="flex space-x-4 w-full pt-4 border-t border-slate-100">
+                                    <div className="flex flex-col sm:flex-row gap-4 w-full pt-4 border-t border-slate-100">
                                         <button
                                             onClick={() => handleAction("END_INTERVIEW")}
                                             disabled={actionLoading}
-                                            className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-4 px-6 rounded-2xl transition-all border border-slate-200 flex items-center justify-center"
+                                            className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-4 px-6 rounded-2xl transition-all border border-slate-200 flex items-center justify-center text-sm"
                                         >
                                             <CheckCircle className="h-5 w-5 mr-2" /> End Interview
                                         </button>
                                         <button
                                             onClick={() => handleAction("CALL_NEXT")}
                                             disabled={actionLoading || queue.length === 0}
-                                            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-blue-200 flex items-center justify-center"
+                                            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-blue-200 flex items-center justify-center text-sm"
                                         >
                                             <Bell className="h-5 w-5 mr-2" /> Call Next
                                         </button>
